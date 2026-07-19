@@ -24,6 +24,14 @@ class OrderViewController: UIViewController, WKNavigationDelegate {
         return wv
     }()
     
+    // Кастомный красный лоадер
+    private let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.color = .systemRed
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+    
     // Минималистичный крестик для закрытия экрана
     private let closeButton: UIButton = {
         let button = UIButton(type: .system)
@@ -59,6 +67,7 @@ class OrderViewController: UIViewController, WKNavigationDelegate {
     
     private func setupSubviews() {
         view.addSubview(mainView)
+        view.addSubview(activityIndicator)
         view.addSubview(closeButton)
         
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
@@ -68,6 +77,11 @@ class OrderViewController: UIViewController, WKNavigationDelegate {
         // Растягиваем на абсолютно весь экран, игнорируя Safe Area
         mainView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
+        }
+        
+        // Центрируем индикатор на экране
+        activityIndicator.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
         
         // Крестик позиционируем с учетом Safe Area, чтобы он не залез под челку / остров
@@ -80,5 +94,55 @@ class OrderViewController: UIViewController, WKNavigationDelegate {
     
     @objc private func closeTapped() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: - WKNavigationDelegate
+    
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        activityIndicator.startAnimating()
+        activityIndicator.alpha = 1.0
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        hideLoader()
+    }
+    
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        print("Ошибка загрузки вебвьюхи: \(error.localizedDescription)")
+        hideLoader()
+    }
+    
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        print("Ошибка навигации вебвьюхи: \(error.localizedDescription)")
+        hideLoader()
+    }
+    
+    private func hideLoader() {
+        UIView.animate(withDuration: 0.25, animations: {
+            self.activityIndicator.alpha = 0.0
+        }) { _ in
+            self.activityIndicator.stopAnimating()
+        }
+    }
+    
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        guard let url = navigationAction.request.url else {
+            decisionHandler(.allow)
+            return
+        }
+        
+        // Проверяем, является ли схема телефонным звонком или почтой
+        if url.scheme == "tel" || url.scheme == "mailto" {
+            // Просим систему открыть урл (запустится звонилка или почтовое приложение)
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
+            // Блокируем этот переход внутри самой веб-вьюхи, так как мы его уже обработали
+            decisionHandler(.cancel)
+            return
+        }
+        
+        // Все остальные стандартные ссылки (http/https) разрешаем
+        decisionHandler(.allow)
     }
 }

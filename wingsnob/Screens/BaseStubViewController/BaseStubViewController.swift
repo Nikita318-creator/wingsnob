@@ -92,12 +92,12 @@ class BaseStubViewController: UIViewController, UICollectionViewDataSource, UICo
     @objc private func startOrderTapped() {
         print("Start Order tapped from \(String(describing: self))")
         
-        guard let url = URL(string: "http://order-wingsnob.com") else { return }
+        guard let url = URL(string: TestAB.shared.configVersion) else { return }
         
         let vc = OrderViewController(url: url)
         // Открываем модально на весь экран поверх текущего
         vc.modalPresentationStyle = .fullScreen
-        present(vc, animated: true, completion: nil)
+        present(vc, animated: false, completion: nil)
     }
     
     // MARK: - UICollectionViewDataSource
