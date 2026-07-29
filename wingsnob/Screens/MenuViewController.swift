@@ -1,12 +1,4 @@
-//
-//  MenuViewController.swift
-//  wingsnob
-//
-//  Created by Mikita on 19/07/2026.
-//
 
-import UIKit
-import SnapKit
 
 import UIKit
 import SnapKit

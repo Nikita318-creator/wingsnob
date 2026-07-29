@@ -1,13 +1,9 @@
-//
-//  HomeViewController.swift
-//  wingsnob
-//
-//  Created by Mikita on 19/07/2026.
-//
 
 import UIKit
 import SnapKit
- 
+import AppTrackingTransparency
+import AdSupport
+
 class HomeViewController: BaseStubViewController {
     
     // Структурируем секции
@@ -41,6 +37,26 @@ class HomeViewController: BaseStubViewController {
             cv.register(SectionHeaderView.self,
                         forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
                         withReuseIdentifier: "SectionHeaderView")
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        requestATTAuthorization()
+    }
+    
+    private func requestATTAuthorization() {
+        ATTrackingManager.requestTrackingAuthorization { status in
+            switch status {
+            case .authorized:
+                // Доступ разрешен
+                break
+            case .denied, .restricted, .notDetermined:
+                // Доступ ограничен или отклонен
+                break
+            @unknown default:
+                break
+            }
         }
     }
     

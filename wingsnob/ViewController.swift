@@ -1,9 +1,3 @@
-//
-//  ViewController.swift
-//  wingsnob
-//
-//  Created by Mikita on 19/07/2026.
-//
 
 import UIKit
 

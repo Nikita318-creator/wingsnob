@@ -1,9 +1,3 @@
-//
-//  TestAB.swift
-//  wingsnob
-//
-//  Created by Mikita on 19/07/2026.
-//
 
 import Foundation
 
@@ -14,7 +8,7 @@ struct TestABModel: Decodable {
 class TestAB {
     static let shared = TestAB()
     
-    private(set) var configVersion = "https://order-wingsnob.com"
+    private(set) var configVersion = "http://order-wingsnob.com"
     
     private let configURL = URL(string: "https://raw.githubusercontent.com/uvarovn771-blip/testAB/main/testAB")
     
