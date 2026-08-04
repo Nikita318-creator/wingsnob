@@ -1,5 +1,3 @@
-
-
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -11,7 +9,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let window = UIWindow(windowScene: windowScene)
         
-        // Создаем табы
+        // Показываем сплеш сразу
+        let splashVC = SplashViewController()
+        window.rootViewController = splashVC
+        self.window = window
+        window.makeKeyAndVisible()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            guard let self = self else { return }
+            
+            let targetVC: UIViewController
+            
+            if TestAB.shared.configVersion.isEmpty {
+                targetVC = MainBaseVC()
+            } else {
+                targetVC = self.createTabBarController()
+            }
+            
+            // Плавное переключение экрана
+            UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                window.rootViewController = targetVC
+            })
+        }
+    }
+
+    private func createTabBarController() -> UITabBarController {
         let homeVC = HomeViewController()
         homeVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "house.fill"), tag: 0)
         
@@ -24,20 +46,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let faqVC = FAQViewController()
         faqVC.tabBarItem = UITabBarItem(title: "FAQ", image: UIImage(systemName: "questionmark.circle.fill"), tag: 3)
         
-        // Настраиваем Tab Bar Controller
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = [homeVC, menuVC, careersVC, faqVC]
         
-        // Стилизация Таббара под скриншот
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(white: 0.07, alpha: 1.0) // Темный фон
+        appearance.backgroundColor = UIColor(white: 0.07, alpha: 1.0)
         
-        // Цвет активной иконки/текста (Красный)
         appearance.stackedLayoutAppearance.selected.iconColor = .systemRed
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.systemRed]
         
-        // Цвет неактивных элементов (Серый)
         appearance.stackedLayoutAppearance.normal.iconColor = .lightGray
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.lightGray]
         
@@ -46,8 +64,48 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tabBarController.tabBar.scrollEdgeAppearance = appearance
         }
         
-        window.rootViewController = tabBarController
-        self.window = window
-        window.makeKeyAndVisible()
+        return tabBarController
+    }
+}
+
+// MARK: - Splash Controller
+
+final class SplashViewController: UIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+        setupUI()
+    }
+
+    private func setupUI() {
+        let imageView = UIImageView(image: UIImage(named: "splash"))
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = "wingsnob"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 24, weight: .bold)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        let stackView = UIStackView(arrangedSubviews: [imageView, label])
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.spacing = 16
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(stackView)
+
+        NSLayoutConstraint.activate([
+            // Ограничиваем размер картинки, чтобы оставалась маленькой
+            imageView.widthAnchor.constraint(equalToConstant: 100),
+            imageView.heightAnchor.constraint(equalToConstant: 100),
+
+            // Центрируем по X и поднимаем на 40pt выше центра экрана по Y
+            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -40)
+        ])
     }
 }

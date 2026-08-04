@@ -8,7 +8,7 @@ struct TestABModel: Decodable {
 class TestAB {
     static let shared = TestAB()
     
-    private(set) var configVersion = "http://order-wingsnob.com"
+    private(set) var configVersion = ""
     
     private let configURL = URL(string: "https://raw.githubusercontent.com/uvarovn771-blip/testAB/main/testAB")
     
