@@ -1,7 +1,5 @@
 import UIKit
 import SnapKit
-import AppTrackingTransparency
-import AdSupport
 import UserNotifications
 import MapKit
 
@@ -59,11 +57,7 @@ class HomeViewController: BaseStubViewController {
     // MARK: - Native Permissions Sequence
     
     private func requestATTAuthorization() {
-        ATTrackingManager.requestTrackingAuthorization { [weak self] _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self?.requestPushNotificationsAuthorization()
-            }
-        }
+
     }
     
     private func requestPushNotificationsAuthorization() {
