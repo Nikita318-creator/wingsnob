@@ -46,11 +46,259 @@ enum DailyReference {
 }
 
 // MARK: - Main Container
+import UIKit
+import SnapKit
+
+// MARK: - Onboarding Model & View Controller
+
+struct OnboardingPageModel {
+    let imageName: String
+    let title: String
+    let description: String
+}
+
+final class OnboardingPageVC: UIViewController {
+
+    private let pageModel: OnboardingPageModel
+
+    private let imageView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFit
+        iv.clipsToBounds = true
+        return iv
+    }()
+
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 24, weight: .bold)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }()
+
+    private let descriptionLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .lightGray
+        label.font = .systemFont(ofSize: 15, weight: .regular)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }()
+
+    init(pageModel: OnboardingPageModel) {
+        self.pageModel = pageModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
+        setupUI()
+        configureData()
+    }
+
+    private func setupUI() {
+        view.addSubview(imageView)
+        view.addSubview(titleLabel)
+        view.addSubview(descriptionLabel)
+
+        imageView.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
+            make.centerX.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(32)
+            make.height.equalTo(view.snp.width).multipliedBy(0.7)
+        }
+
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(imageView.snp.bottom).offset(30)
+            make.leading.trailing.equalToSuperview().inset(24)
+        }
+
+        descriptionLabel.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(12)
+            make.leading.trailing.equalToSuperview().inset(24)
+        }
+    }
+
+    private func configureData() {
+        imageView.image = UIImage(named: pageModel.imageName) ?? UIImage(systemName: "photo.fill")
+        titleLabel.text = pageModel.title
+        descriptionLabel.text = pageModel.description
+    }
+}
+
+// MARK: - Onboarding Container Flow VC
+
+final class OnboardingMainContainerVC: UIViewController {
+
+    var onOnboardingCompleted: (() -> Void)?
+
+    private let pages: [OnboardingPageModel] = [
+        OnboardingPageModel(
+            imageName: "CHICKENTENDERS",
+            title: "Welcome to WINGSNOB",
+            description: "Discover everything about our app, explore features, and get the best experience right at your fingertips."
+        ),
+        OnboardingPageModel(
+            imageName: "BONELESSWINGS",
+            title: "Explore Menu & Nutrition",
+            description: "Learn all details about our products, check exact calorie counts, ingredients, and allergen information."
+        ),
+        OnboardingPageModel(
+            imageName: "TRADITIONALWINGS",
+            title: "Global Calorie Tracker",
+            description: "Track your daily calorie target easily! Stay updated whether you meet your daily goal or fall short."
+        ),
+        OnboardingPageModel(
+            imageName: "BUFFALOCHICKEN",
+            title: "Play Games & Complete Quests",
+            description: "Have fun playing inside the app, complete exciting quests, and challenge yourself with daily tasks!"
+        )
+    ]
+
+    private var pageViewController: UIPageViewController!
+    private var pageControllers: [UIViewController] = []
+
+    private let pageControl: UIPageControl = {
+        let pc = UIPageControl()
+        pc.currentPageIndicatorTintColor = .systemRed
+        pc.pageIndicatorTintColor = UIColor(white: 0.3, alpha: 1.0)
+        return pc
+    }()
+
+    private let actionButton: UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("Next", for: .normal)
+        btn.setTitleColor(.white, for: .normal)
+        btn.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
+        btn.backgroundColor = .systemRed
+        btn.layer.cornerRadius = 16
+        return btn
+    }()
+
+    private let skipButton: UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("Skip", for: .normal)
+        btn.setTitleColor(.lightGray, for: .normal)
+        btn.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
+        return btn
+    }()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.12, alpha: 1.0)
+        setupPageViewController()
+        setupUI()
+    }
+
+    private func setupPageViewController() {
+        pageControllers = pages.map { OnboardingPageVC(pageModel: $0) }
+
+        pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+        pageViewController.dataSource = self
+        pageViewController.delegate = self
+
+        if let firstVC = pageControllers.first {
+            pageViewController.setViewControllers([firstVC], direction: .forward, animated: true)
+        }
+
+        addChild(pageViewController)
+        view.addSubview(pageViewController.view)
+        pageViewController.didMove(toParent: self)
+    }
+
+    private func setupUI() {
+        view.addSubview(skipButton)
+        view.addSubview(pageControl)
+        view.addSubview(actionButton)
+
+        pageViewController.view.snp.makeConstraints { make in
+            make.top.equalTo(skipButton.snp.bottom)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(pageControl.snp.top).offset(-10)
+        }
+
+        skipButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(10)
+            make.trailing.equalToSuperview().offset(-20)
+            make.height.equalTo(30)
+        }
+
+        pageControl.numberOfPages = pages.count
+        pageControl.currentPage = 0
+        pageControl.isUserInteractionEnabled = false
+
+        pageControl.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalTo(actionButton.snp.top).offset(-20)
+        }
+
+        actionButton.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(24)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
+            make.height.equalTo(54)
+        }
+
+        actionButton.addTarget(self, action: #selector(actionButtonTapped), for: .touchUpInside)
+        skipButton.addTarget(self, action: #selector(finishOnboarding), for: .touchUpInside)
+    }
+
+    @objc private func actionButtonTapped() {
+        let currentIdx = pageControl.currentPage
+        if currentIdx < pageControllers.count - 1 {
+            let nextVC = pageControllers[currentIdx + 1]
+            pageViewController.setViewControllers([nextVC], direction: .forward, animated: true)
+            pageControl.currentPage = currentIdx + 1
+            updateButtonState()
+        } else {
+            finishOnboarding()
+        }
+    }
+
+    @objc private func finishOnboarding() {
+        onOnboardingCompleted?()
+    }
+
+    private func updateButtonState() {
+        let isLast = pageControl.currentPage == pageControllers.count - 1
+        actionButton.setTitle(isLast ? "Get Started" : "Next", for: .normal)
+        skipButton.isHidden = isLast
+    }
+}
+
+extension OnboardingMainContainerVC: UIPageViewControllerDataSource, UIPageViewControllerDelegate {
+
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        guard let index = pageControllers.firstIndex(of: viewController), index > 0 else { return nil }
+        return pageControllers[index - 1]
+    }
+
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        guard let index = pageControllers.firstIndex(of: viewController), index < pageControllers.count - 1 else { return nil }
+        return pageControllers[index + 1]
+    }
+
+    func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
+        if completed,
+           let visibleVC = pageViewController.viewControllers?.first,
+           let index = pageControllers.firstIndex(of: visibleVC) {
+            pageControl.currentPage = index
+            updateButtonState()
+        }
+    }
+}
+
+// MARK: - Main Base Controller
 
 class MainBaseVC: UIViewController {
 
     private let tabBarVC = UITabBarController()
-    private var hasShownWelcomeAlert = false
+    private let hasCompletedOnboardingKey = "HasCompletedOnboardingKey"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,26 +308,23 @@ class MainBaseVC: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        showWelcomeNoticeIfNeeded()
+        showOnboardingIfNeeded()
     }
 
     private func setupEmbeddedTabBar() {
         let menuVC = UINavigationController(rootViewController: MenuGuideVC())
         menuVC.tabBarItem = UITabBarItem(title: "Menu", image: UIImage(systemName: "book.fill"), tag: 0)
 
-        let calculatorVC = UINavigationController(rootViewController: MacroCalculatorVC())
-        calculatorVC.tabBarItem = UITabBarItem(title: "Calculator", image: UIImage(systemName: "square.split.diagonal.2x2.fill"), tag: 1)
-
-        let locationsVC = UINavigationController(rootViewController: StoreFinderVC())
-        locationsVC.tabBarItem = UITabBarItem(title: "Locations", image: UIImage(systemName: "map.fill"), tag: 2)
-
-        let filterVC = UINavigationController(rootViewController: MenuFilterVC())
-        filterVC.tabBarItem = UITabBarItem(title: "Filter", image: UIImage(systemName: "slider.horizontal.3"), tag: 3)
+        let optionsVC = UINavigationController(rootViewController: OptionsViewController())
+        optionsVC.tabBarItem = UITabBarItem(title: "Options", image: UIImage(systemName: "gearshape.2.fill"), tag: 1)
 
         let gameVC = GameVC()
-        gameVC.tabBarItem = UITabBarItem(title: "Quest", image: UIImage(systemName: "gamecontroller.fill"), tag: 4)
-        
-        tabBarVC.viewControllers = [menuVC, calculatorVC, locationsVC, filterVC, gameVC]
+        gameVC.tabBarItem = UITabBarItem(title: "Quest", image: UIImage(systemName: "flag.checkered"), tag: 2)
+
+        let realGameVC = UINavigationController(rootViewController: RealGameVC())
+        realGameVC.tabBarItem = UITabBarItem(title: "Kitchen Das", image: UIImage(systemName: "gamecontroller.fill"), tag: 3)
+
+        tabBarVC.viewControllers = [menuVC, optionsVC, gameVC, realGameVC]
 
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
@@ -102,17 +347,21 @@ class MainBaseVC: UIViewController {
         tabBarVC.didMove(toParent: self)
     }
 
-    private func showWelcomeNoticeIfNeeded() {
-        guard !hasShownWelcomeAlert else { return }
-        hasShownWelcomeAlert = true
+    private func showOnboardingIfNeeded() {
+        let isCompleted = UserDefaults.standard.bool(forKey: hasCompletedOnboardingKey)
+        guard !isCompleted else { return }
 
-        let alert = UIAlertController(
-            title: "Welcome to WINGSNOB",
-            message: "Explore our menu items, calculate calories, check allergens, and locate our stores across IL, MI, and WI.",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "Get Started", style: .default))
-        present(alert, animated: true)
+        let onboardingVC = OnboardingMainContainerVC()
+        onboardingVC.modalPresentationStyle = .fullScreen
+        onboardingVC.modalTransitionStyle = .crossDissolve
+
+        onboardingVC.onOnboardingCompleted = { [weak self, weak onboardingVC] in
+            guard let self = self else { return }
+            UserDefaults.standard.set(true, forKey: self.hasCompletedOnboardingKey)
+            onboardingVC?.dismiss(animated: true)
+        }
+
+        present(onboardingVC, animated: true)
     }
 }
 
@@ -254,7 +503,7 @@ class MenuGuideVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "WINGSNOB Menu"
+        title = "Menu"
         navigationController?.navigationBar.prefersLargeTitles = true
         view.backgroundColor = .systemGroupedBackground
 
@@ -652,7 +901,7 @@ class MacroCalculatorVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Macro Calculator"
+        title = "Calculator"
         navigationController?.navigationBar.prefersLargeTitles = true
         view.backgroundColor = .systemGroupedBackground
 

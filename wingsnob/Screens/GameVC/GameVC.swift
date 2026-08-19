@@ -1,5 +1,4 @@
 
-import UIKit
 import SnapKit
 import PhotosUI
 
@@ -365,8 +364,11 @@ extension GameVC: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout
             self?.loadData()
         }
         
-
-            present(UINavigationController(rootViewController: detailVC), animated: true)
+        if let nav = navigationController {
+            nav.pushViewController(detailVC, animated: true)
+        } else {
+            present(detailVC, animated: true)
+        }
     }
 }
 
@@ -379,6 +381,14 @@ final class QuestDetailVC: UIViewController {
     
     private let scrollView = UIScrollView()
     private let contentView = UIView()
+    
+    private let closeButton: UIButton = {
+        let btn = UIButton(type: .system)
+        let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .bold)
+        btn.setImage(UIImage(systemName: "xmark.circle.fill", withConfiguration: config), for: .normal)
+        btn.tintColor = UIColor(white: 0.6, alpha: 1)
+        return btn
+    }()
     
     private let imageView: UIImageView = {
         let iv = UIImageView()
@@ -474,6 +484,7 @@ final class QuestDetailVC: UIViewController {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         
+        contentView.addSubview(closeButton)
         contentView.addSubview(imageView)
         contentView.addSubview(titleLabel)
         contentView.addSubview(rewardBadge)
@@ -494,8 +505,14 @@ final class QuestDetailVC: UIViewController {
             make.width.equalTo(scrollView)
         }
         
-        imageView.snp.makeConstraints { make in
+        closeButton.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+            make.size.equalTo(32)
+        }
+        
+        imageView.snp.makeConstraints { make in
+            make.top.equalTo(closeButton.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(200)
         }
@@ -546,7 +563,16 @@ final class QuestDetailVC: UIViewController {
             make.bottom.equalToSuperview().offset(-30)
         }
         
+        closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
         actionButton.addTarget(self, action: #selector(actionTapped), for: .touchUpInside)
+    }
+    
+    @objc private func closeTapped() {
+        if let nav = navigationController {
+            nav.popViewController(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
     }
     
     private func renderQuest() {
@@ -592,7 +618,7 @@ final class QuestDetailVC: UIViewController {
             
             let alert = UIAlertController(title: "Congratulations!", message: "You received +\(quest.rewardXP) XP", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Awesome", style: .default, handler: { [weak self] _ in
-                self?.navigationController?.popViewController(animated: true)
+                self?.closeTapped()
             }))
             present(alert, animated: true)
         } else {
@@ -605,7 +631,7 @@ final class QuestDetailVC: UIViewController {
                 self.onUpdate(self.quest)
                 self.renderQuest()
             }
-            present(UINavigationController(rootViewController: submissionVC), animated: true)
+            present(submissionVC, animated: true)
         }
     }
 }
@@ -619,6 +645,25 @@ final class QuestSubmissionVC: UIViewController {
     private var selectedImageData: Data?
     
     private let placeholderNote = "Write a short comment on how you completed this task..."
+    
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
+    
+    private let closeButton: UIButton = {
+        let btn = UIButton(type: .system)
+        let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)
+        btn.setImage(UIImage(systemName: "xmark.circle.fill", withConfiguration: config), for: .normal)
+        btn.tintColor = UIColor(white: 0.6, alpha: 1)
+        return btn
+    }()
+    
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Proof of Completion"
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        return label
+    }()
     
     private let photoImageView: UIImageView = {
         let iv = UIImageView()
@@ -672,21 +717,49 @@ final class QuestSubmissionVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(white: 0.1, alpha: 1)
-        title = "Proof of Completion"
-        
-        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelTapped))
         
         setupUI()
+        setupKeyboardObservers()
+        setupDismissKeyboardGesture()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     private func setupUI() {
-        view.addSubview(photoImageView)
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(closeButton)
+        contentView.addSubview(photoImageView)
         photoImageView.addSubview(placeholderLabel)
-        view.addSubview(noteTextView)
-        view.addSubview(submitButton)
+        contentView.addSubview(noteTextView)
+        contentView.addSubview(submitButton)
+        
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalTo(scrollView)
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(20)
+            make.leading.equalToSuperview().offset(16)
+        }
+        
+        closeButton.snp.makeConstraints { make in
+            make.centerY.equalTo(titleLabel)
+            make.trailing.equalToSuperview().offset(-16)
+            make.size.equalTo(30)
+        }
         
         photoImageView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
+            make.top.equalTo(titleLabel.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(180)
         }
@@ -705,13 +778,47 @@ final class QuestSubmissionVC: UIViewController {
             make.top.equalTo(noteTextView.snp.bottom).offset(24)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(50)
+            make.bottom.equalToSuperview().offset(-30)
         }
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(selectPhoto))
         photoImageView.addGestureRecognizer(tap)
         
+        closeButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         noteTextView.delegate = self
         submitButton.addTarget(self, action: #selector(submitTapped), for: .touchUpInside)
+    }
+    
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    private func setupDismissKeyboardGesture() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    @objc private func keyboardWillShow(notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        
+        let keyboardHeight = keyboardFrame.height
+        scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        scrollView.scrollIndicatorInsets = scrollView.contentInset
+        
+        let rect = noteTextView.convert(noteTextView.bounds, to: scrollView)
+        scrollView.scrollRectToVisible(rect, animated: true)
+    }
+    
+    @objc private func keyboardWillHide(notification: NSNotification) {
+        scrollView.contentInset = .zero
+        scrollView.scrollIndicatorInsets = .zero
     }
     
     @objc private func cancelTapped() {
