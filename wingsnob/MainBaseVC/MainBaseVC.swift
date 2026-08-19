@@ -76,7 +76,10 @@ class MainBaseVC: UIViewController {
         let filterVC = UINavigationController(rootViewController: MenuFilterVC())
         filterVC.tabBarItem = UITabBarItem(title: "Filter", image: UIImage(systemName: "slider.horizontal.3"), tag: 3)
 
-        tabBarVC.viewControllers = [menuVC, calculatorVC, locationsVC, filterVC]
+        let gameVC = GameVC()
+        gameVC.tabBarItem = UITabBarItem(title: "Quest", image: UIImage(systemName: "gamecontroller.fill"), tag: 4)
+        
+        tabBarVC.viewControllers = [menuVC, calculatorVC, locationsVC, filterVC, gameVC]
 
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
