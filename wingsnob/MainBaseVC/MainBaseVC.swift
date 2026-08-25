@@ -140,24 +140,24 @@ final class OnboardingMainContainerVC: UIViewController {
 
     private let pages: [OnboardingPageModel] = [
         OnboardingPageModel(
-            imageName: "CHICKENTENDERS",
-            title: "Welcome to WINGSNOB",
-            description: "Discover everything about our app, explore features, and get the best experience right at your fingertips."
+            imageName: "kitchen1",
+            title: "Welcome to Kitchen Rush!",
+            description: "Step into the shoes of a head chef, manage your busy kitchen, and build your ultimate culinary empire!"
         ),
         OnboardingPageModel(
-            imageName: "BONELESSWINGS",
-            title: "Explore Menu & Nutrition",
-            description: "Learn all details about our products, check exact calorie counts, ingredients, and allergen information."
+            imageName: "kitchen2",
+            title: "Master Every Recipe",
+            description: "Memorize complex order patterns, prep fresh ingredients at top speed, and deliver mouth-watering dishes!"
         ),
         OnboardingPageModel(
-            imageName: "TRADITIONALWINGS",
-            title: "Global Calorie Tracker",
-            description: "Track your daily calorie target easily! Stay updated whether you meet your daily goal or fall short."
+            imageName: "kitchen3",
+            title: "Conquer Arcade Challenges",
+            description: "Dodge kitchen hazards, catch falling food, and test your reflexes across dozens of intense levels!"
         ),
         OnboardingPageModel(
-            imageName: "BUFFALOCHICKEN",
-            title: "Play Games & Complete Quests",
-            description: "Have fun playing inside the app, complete exciting quests, and challenge yourself with daily tasks!"
+            imageName: "food1",
+            title: "Level Up & Win Big",
+            description: "Complete daily kitchen shifts, unlock higher difficulty levels, and prove you have what it takes to run the restaurant!"
         )
     ]
 
@@ -312,19 +312,35 @@ class MainBaseVC: UIViewController {
     }
 
     private func setupEmbeddedTabBar() {
-        let menuVC = UINavigationController(rootViewController: MenuGuideVC())
-        menuVC.tabBarItem = UITabBarItem(title: "Menu", image: UIImage(systemName: "book.fill"), tag: 0)
+        let kitchensVC = UINavigationController(rootViewController: KitchensVC())
+        kitchensVC.tabBarItem = UITabBarItem(title: "Kitchens", image: UIImage(systemName: "fork.knife.circle"), tag: 0)
+        
+        let privacyVC = UINavigationController(rootViewController: PrivacyVC())
+        privacyVC.tabBarItem = UITabBarItem(title: "Privacy", image: UIImage(systemName: "shield.fill"), tag: 1)
+        
+        let myProfileVC = UINavigationController(rootViewController: MyProfileVC())
+        myProfileVC.tabBarItem = UITabBarItem(title: "MyProfile", image: UIImage(systemName: "person.crop.circle.fill"), tag: 2)
+        
+        let storyIntroVC = UINavigationController(rootViewController: StoryIntroVC())
+        storyIntroVC.tabBarItem = UITabBarItem(
+            title: "Origin",
+            image: UIImage(systemName: "book.pages"),
+            tag: 4
+        )
+//        let menuVC = UINavigationController(rootViewController: MenuGuideVC())
+//        menuVC.tabBarItem = UITabBarItem(title: "Menu", image: UIImage(systemName: "book.fill"), tag: 0)
+//
+//        let optionsVC = UINavigationController(rootViewController: OptionsViewController())
+//        optionsVC.tabBarItem = UITabBarItem(title: "Options", image: UIImage(systemName: "gearshape.2.fill"), tag: 1)
+//
+//        let gameVC = GameVC()
+//        gameVC.tabBarItem = UITabBarItem(title: "Quest", image: UIImage(systemName: "flag.checkered"), tag: 2)
+//
+//        let realGameVC = UINavigationController(rootViewController: RealGameVC())
+//        realGameVC.tabBarItem = UITabBarItem(title: "Kitchen Das", image: UIImage(systemName: "gamecontroller.fill"), tag: 3)
 
-        let optionsVC = UINavigationController(rootViewController: OptionsViewController())
-        optionsVC.tabBarItem = UITabBarItem(title: "Options", image: UIImage(systemName: "gearshape.2.fill"), tag: 1)
-
-        let gameVC = GameVC()
-        gameVC.tabBarItem = UITabBarItem(title: "Quest", image: UIImage(systemName: "flag.checkered"), tag: 2)
-
-        let realGameVC = UINavigationController(rootViewController: RealGameVC())
-        realGameVC.tabBarItem = UITabBarItem(title: "Kitchen Das", image: UIImage(systemName: "gamecontroller.fill"), tag: 3)
-
-        tabBarVC.viewControllers = [menuVC, optionsVC, gameVC, realGameVC]
+//        tabBarVC.viewControllers = [menuVC, optionsVC, gameVC, realGameVC]
+        tabBarVC.viewControllers = [kitchensVC, storyIntroVC, privacyVC, myProfileVC]
 
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()

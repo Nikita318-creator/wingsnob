@@ -82,9 +82,11 @@ final class SplashViewController: UIViewController {
         let imageView = UIImageView(image: UIImage(named: "splash"))
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
-
+        imageView.layer.cornerRadius = 100
+        imageView.clipsToBounds = true
+        
         let label = UILabel()
-        label.text = "wingsnob"
+        label.text = ""
         label.textColor = .white
         label.font = .systemFont(ofSize: 24, weight: .bold)
         label.textAlignment = .center
@@ -100,8 +102,8 @@ final class SplashViewController: UIViewController {
 
         NSLayoutConstraint.activate([
             // Ограничиваем размер картинки, чтобы оставалась маленькой
-            imageView.widthAnchor.constraint(equalToConstant: 100),
-            imageView.heightAnchor.constraint(equalToConstant: 100),
+            imageView.widthAnchor.constraint(equalToConstant: 200),
+            imageView.heightAnchor.constraint(equalToConstant: 200),
 
             // Центрируем по X и поднимаем на 40pt выше центра экрана по Y
             stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
