@@ -424,7 +424,7 @@ final class SingleKitchenVC: UIViewController {
             let btnTitle = isLast ? "START GAME" : "NEXT >"
             self.nextButton.setTitle(btnTitle, for: .normal)
             
-            self.levelBadgeLabel.text = "LEVEL \(self.viewModel.currentLevel.levelNumber)/10"
+            self.levelBadgeLabel.text = "LEVEL \(self.viewModel.currentLevel.levelNumber)/100"
             self.levelBadgeLabel.isHidden = false
         }
         
