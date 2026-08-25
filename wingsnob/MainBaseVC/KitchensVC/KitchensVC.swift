@@ -1,4 +1,3 @@
-
 import UIKit
 import SnapKit
 
@@ -119,6 +118,13 @@ final class KitchensVC: UIViewController {
             make.leading.trailing.bottom.equalToSuperview()
         }
     }
+    
+    private func openGame(for kitchen: KitchenModel) {
+        let viewModel = SingleKitchenViewModel(kitchen: kitchen)
+        let singleKitchenVC = SingleKitchenVC(viewModel: viewModel)
+        singleKitchenVC.modalPresentationStyle = .fullScreen
+        present(singleKitchenVC, animated: true)
+    }
 }
 
 // MARK: - UICollectionView DataSource & Delegate
@@ -134,30 +140,23 @@ extension KitchensVC: UICollectionViewDataSource, UICollectionViewDelegateFlowLa
         }
         let model = kitchens[indexPath.item]
         cell.configure(with: model)
-        cell.onStartTap = { [weak self] in
-            self?.openGame(for: model)
-        }
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let model = kitchens[indexPath.item]
+        openGame(for: model)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = collectionView.bounds.width - 32
         return CGSize(width: width, height: 180)
     }
-    
-    private func openGame(for kitchen: KitchenModel) {
-        let viewModel = SingleKitchenViewModel(kitchen: kitchen)
-        let singleKitchenVC = SingleKitchenVC(viewModel: viewModel)
-        singleKitchenVC.modalPresentationStyle = .fullScreen
-        present(singleKitchenVC, animated: true)
-    }
 }
 
 // MARK: - Custom Cell
 final class KitchenCell: UICollectionViewCell {
     static let identifier = "KitchenCell"
-    
-    var onStartTap: (() -> Void)?
     
     private let containerView: UIView = {
         let view = UIView()
@@ -206,6 +205,7 @@ final class KitchenCell: UICollectionViewCell {
         btn.titleLabel?.font = .systemFont(ofSize: 12, weight: .bold)
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 8
+        btn.isUserInteractionEnabled = false // Пропускаем касания сквозь кнопку прямо на ячейку
         return btn
     }()
     
@@ -257,8 +257,6 @@ final class KitchenCell: UICollectionViewCell {
             make.width.equalTo(110)
             make.height.equalTo(34)
         }
-        
-        actionButton.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
     }
     
     func configure(with model: KitchenModel) {
@@ -268,9 +266,5 @@ final class KitchenCell: UICollectionViewCell {
         descriptionLabel.text = model.descriptionText
         iconImageView.image = UIImage(named: model.imageName)
         actionButton.backgroundColor = model.primaryColor
-    }
-    
-    @objc private func didTapButton() {
-        onStartTap?()
     }
 }
