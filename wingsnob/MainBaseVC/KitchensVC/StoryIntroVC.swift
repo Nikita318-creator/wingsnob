@@ -15,9 +15,9 @@ final class StoryIntroVC: UIViewController {
     private let slides: [IntroSlideModel] = [
         // PART 1: The Legend Begins
         IntroSlideModel(
-            title: "THE CULINARY KINGDOM",
-            text: "Once upon a time, Culinary City was the most famous food capital in the world, renowned for its legendary flavors.",
-            imageName: "kitchen1", isFoodIcon: false,
+            title: "FRESH & CRISPY ORIGINS",
+            text: "Every great legend starts with premium ingredients. We source fresh chicken, toss each batch in our signature dry rubs, and deep-fry to golden perfection to deliver authentic flavor in every bite.",
+            imageName: "wingSnobK1", isFoodIcon: false,
             accentColor: UIColor(red: 0.95, green: 0.36, blue: 0.22, alpha: 1.0)
         ),
         IntroSlideModel(
